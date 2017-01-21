@@ -13,4 +13,4 @@
 3 - Pac Man
 
 [code](sketch_00_3_PacMan/sketch_00_3_PacMan.pde)
-![documentation](sketch_00_3_PacMan/3-PacMan-Documentation.mov)
+[video](sketch_00_3_PacMan/3-PacMan-Documentation.mov)
