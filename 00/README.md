@@ -1,4 +1,4 @@
-# Project 00
+# Project 00 Documentation
 
 ## 1 - One Circle
 
