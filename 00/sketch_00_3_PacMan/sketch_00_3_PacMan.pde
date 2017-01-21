@@ -51,6 +51,10 @@ void draw() {
   float xDelt = v2.x - v1.x;
   float yDelt = v2.y - v1.y;
   
+  //if (xDelt != 0.0) {
+  //  theta = atan(yDelt/xDelt);
+  //}
+  
   if (xDelt > 0.0) {
     theta = atan(yDelt/xDelt);
     //theta2 = atan2(v1.y, v1.x);
@@ -60,8 +64,8 @@ void draw() {
       theta = atan(yDelt/xDelt) + PI;
     }
   }
-  //println(xDelt, degrees(theta));
-  //println(degrees(theta2));
+  println(xDelt, degrees(theta));
+  println(degrees(theta2));
   
   float dist = PVector.dist(v1, v2);
   angle = map(dist, 0, 75, 0, 1) * angle;
@@ -87,7 +91,7 @@ void draw() {
   stroke(255);
   //line(v1.x, v1.y, v2.x, v2.y);
   
-  text(degrees(tAvg), 10, 20);
+  //text(degrees(tAvg), 10, 20);
   
   int buffSize = 20;
   xHist.append(mouseX);
