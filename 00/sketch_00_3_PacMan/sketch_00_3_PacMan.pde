@@ -1,5 +1,6 @@
 
-IntList xHist, yHist, tHist;
+IntList xHist, yHist;
+FloatList tHist;
 float theta;
 float theta2;
 
@@ -7,9 +8,10 @@ void setup() {
   size(800, 800);
   xHist = new IntList();
   yHist = new IntList();
+  tHist = new FloatList();
   xHist.append(width/2);
   yHist.append(height/2);
-  yHist = new IntList();
+  tHist.append(0);
 }
 
 void draw() {
@@ -22,13 +24,21 @@ void draw() {
     
   int xSum = 0;
   int ySum = 0;
+  float tSum = 0;
+  int len = xHist.size();
   for (int i = 0; i < xHist.size(); i++) {
     xSum += xHist.get(i);
     ySum += yHist.get(i);
+    
   }
-  float xAvg = xSum / xHist.size() * 1.0;
-  float yAvg = ySum / yHist.size() * 1.0;
+  for (int i = 0; i < tHist.size(); i++) {
+    tSum += tHist.get(i);
+  }
+  float xAvg = 1.0 * xSum / len;
+  float yAvg = 1.0 * ySum / len;
+  float tAvg = 1.0 * tSum / tHist.size();
   //println(xSum, xAvg);
+  println(tSum, tHist.size(), tAvg);
   
   //pushMatrix();
   //translate(width/2, height/2);
@@ -59,10 +69,12 @@ void draw() {
   if (angle > limit) {
     angle = limit;
   }
-  println(degrees(angle));
+  //println(degrees(angle));
   
   //println(adj, opp, degrees(theta));
-  arc(mouseX - xDelt - cos(theta) * offset , mouseY - yDelt - sin(theta) * offset, diam, diam, theta + angle, theta + 2 * PI - angle, PIE);
+  float xPos =  mouseX - xDelt - cos(tAvg) * offset; 
+  float yPos = mouseY - yDelt - sin(tAvg) * offset;
+  arc(xPos, yPos, diam, diam, tAvg + angle, tAvg + 2 * PI - angle, PIE);
   stroke(255, 0, 0);
   //line(0, 0, mouseX, mouseY);
   noStroke();
@@ -75,13 +87,17 @@ void draw() {
   stroke(255);
   //line(v1.x, v1.y, v2.x, v2.y);
   
-  text(degrees(theta), 10, 20);
+  text(degrees(tAvg), 10, 20);
   
   int buffSize = 20;
   xHist.append(mouseX);
   yHist.append(mouseY);
+  tHist.append(theta);
   if (xHist.size() >= buffSize) {
     xHist.remove(0);
     yHist.remove(0);
+  }
+  if (tHist.size() >= 20) {
+    tHist.remove(0);
   }
 }
