@@ -10,3 +10,7 @@
 [code](sketch_00_2_Grid/sketch_00_2_Grid.pde)
 ![documentation](sketch_00_2_Grid/2-CircleGrid-Documentation.png)
 
+3 - Pac Man
+
+[code](sketch_00_3_PacMan/sketch_00_3_PacMan.pde)
+![documentation](sketch_00_3_PacMan/3-PacMan-Documentation.mov)
