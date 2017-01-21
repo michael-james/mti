@@ -15,5 +15,6 @@
 [code](sketch_00_3_PacMan/sketch_00_3_PacMan.pde)
 
 [video](sketch_00_3_PacMan/3-PacMan-Documentation.mov)
+
 ![documentation](sketch_00_3_PacMan/3-PacMan-Documentation.gif)
 
