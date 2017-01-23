@@ -17,3 +17,11 @@
 [video](sketch_00_3_PacMan/3-PacMan-Documentation.mov)
 
 ![documentation](sketch_00_3_PacMan/3-PacMan-Documentation.gif)
+
+## 4 - Personality Circles
+
+[code](sketch_00_4_PersonalityCircles/sketch_00_4_PersonalityCircles.pde)
+
+[video](sketch_00_4_PersonalityCircles/4-Personality-Documentation.mov)
+
+![documentation](sketch_00_4_PersonalityCircles/4-Personality-Documentation.gif)
