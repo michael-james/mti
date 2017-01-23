@@ -1,42 +1,69 @@
 
 ArrayList<Circle> circles = new ArrayList<Circle>();
 ArrayList<Circle> grownCircles = new ArrayList<Circle>();
+boolean incited;
 
-void setup() 
-{
+void setup() {
   size(800, 800);
   frameRate(30);
+  //blendMode(ADD);
+}
+
+void draw() { 
+  if (frameCount == 0) {
+    start();
+  }
   
+  background(255/2);
+  
+  for (int i = 0; i < circles.size(); i++) {
+    // update each circle
+    Circle thisCircle = circles.get(i);
+    thisCircle.update();
+    for (int j = 0; j < grownCircles.size(); j++) {
+      // check for collisions with each circle that's grown
+      Circle otherCircle = grownCircles.get(j);
+      thisCircle.chkColl(j, otherCircle);
+    }
+  }
+  
+  for (int k = 1; k < (grownCircles.size() - 1); k++) {
+    grownCircles.get(k).update();
+  }
+  
+  if (grownCircles.size() > 0) {
+    grownCircles.get(0).update();
+  }
+  
+  int reset = 30 * 12;
+  if (frameCount % reset == reset - 1) {
+    reset();
+  }  
+} 
+
+void start() {
+  println("currentFrame", frameCount);
+  incited = false;
+  println(circles.size(), grownCircles.size());
   int count = 20;
   for (int c = 0; c < count; c++) {
     circles.add(new Circle());
   }
-  
-  grownCircles.add(new Circle(true, width/2, height/2));
+  println(circles.size(), grownCircles.size());
 }
 
-void draw() { 
-  background(0);
-  
-  for (int i = 0; i < circles.size(); i++) {
-    Circle thisCircle = circles.get(i);
-    thisCircle.update();
-    for (int j = 0; j < grownCircles.size(); j++) {
-      Circle otherCircle = grownCircles.get(j);
-      thisCircle.chkColl(otherCircle);
-    }
-  }
-  
-  for (int k = 0; k < grownCircles.size(); k++) {
-    grownCircles.get(k).update();
-  }
-} 
+void reset() {
+  println("reset!");
+  circles.clear();
+  grownCircles.clear();
+  start();
+}
  
 class Circle { 
   PVector p;
   float r, s, d;
   color f;
-  boolean grow;
+  boolean v, grow;
   
   // default
   Circle () {  
@@ -44,11 +71,17 @@ class Circle {
     r = random(15, 23);
     s = random(1,4);
     d = radians(random(0, 360));
-    int fMin = 75;
+    int fMin = 100;
     int fMax = 255;
     int opac = 175;
-    f = color(random(fMin, fMax), random(fMin, fMax), random(fMin, fMax), opac);
+    float r = random(fMin, fMax);
+    println("red", r);
+    float g = random(fMin, fMax);
+    float b = random(fMin, fMax);
+    f = color(r, g, b, opac);
+    v = true; // visible
     grow = false;
+    println(red(f), green(f), red(f));
   } 
   
   // mouse
@@ -57,8 +90,9 @@ class Circle {
     r = 10;
     s = 0;
     d = 0;
-    int opac = 175;
+    int opac = 200;
     f = color(255, opac);
+    v = true; // visible
     grow = true;
   } 
   
@@ -72,7 +106,7 @@ class Circle {
     noStroke();
     fill(f);
     ellipseMode(CENTER);
-    ellipse(p.x, p.y, r * 2, r * 2); 
+    ellipse(p.x, p.y, r * 2, r * 2);
     
     int rMax = 70;
     float rGrowRate = 0.5;
@@ -85,21 +119,24 @@ class Circle {
     d += HALF_PI;
   }
   
-  void chkColl(Circle other) {
+  void chkColl(int i, Circle other) {
     float dist = PVector.dist(p, other.p);
-    if (dist < (r + other.r)) {
-      println("collision!");
+    if (grow == false && dist < (r + other.r)) {
       //flip();
       //other.flip();
       grow = true;
       s = 0;
-      //grownCircles.add(this);
+      grownCircles.add(this);
       //circles.remove(this);
+      //grownCircles.add(new Circle(true, (int)p.x, (int)p.y));
     }
   }
-} 
+}
 
 void mouseClicked() {
-  println("go!");
-  //grownCircles.add(new Circle(true, mouseX, mouseY));
+  if (!incited) {
+    println("go!");
+    incited = true;
+    grownCircles.add(new Circle(true, mouseX, mouseY));
+  }
 }
