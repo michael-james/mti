@@ -11,6 +11,8 @@ void setup()
   for (int c = 0; c < count; c++) {
     circles.add(new Circle());
   }
+  
+  grownCircles.add(new Circle(true, width/2, height/2));
 }
 
 void draw() { 
@@ -20,16 +22,13 @@ void draw() {
     Circle thisCircle = circles.get(i);
     thisCircle.update();
     for (int j = 0; j < grownCircles.size(); j++) {
-      if (i != j) {
-        Circle otherCircle = grownCircles.get(j);
-        thisCircle.chkColl(otherCircle);
-      }
+      Circle otherCircle = grownCircles.get(j);
+      thisCircle.chkColl(otherCircle);
     }
   }
   
   for (int k = 0; k < grownCircles.size(); k++) {
-    Circle thisCircle = circles.get(k);
-    thisCircle.update();
+    grownCircles.get(k).update();
   }
 } 
  
@@ -55,7 +54,7 @@ class Circle {
   // mouse
   Circle (boolean g, int x, int y) {  
     p = new PVector(x, y);
-    r = 0;
+    r = 10;
     s = 0;
     d = 0;
     int opac = 175;
@@ -94,12 +93,13 @@ class Circle {
       //other.flip();
       grow = true;
       s = 0;
-      grownCircles.add(this);
-      circles.remove(this);
+      //grownCircles.add(this);
+      //circles.remove(this);
     }
   }
 } 
 
 void mouseClicked() {
-  grownCircles.add(new Circle(false, mouseX, mouseY));
+  println("go!");
+  //grownCircles.add(new Circle(true, mouseX, mouseY));
 }
