@@ -1,69 +1,61 @@
 
 ArrayList<Circle> circles = new ArrayList<Circle>();
 ArrayList<Circle> grownCircles = new ArrayList<Circle>();
-boolean incited;
 
 void setup() {
   size(800, 800);
   frameRate(30);
-  //blendMode(ADD);
 }
 
 void draw() { 
-  if (frameCount == 0) {
-    start();
-  }
+  background(0); // black
+  //background(255/2); // gray
   
-  background(255/2);
-  
+  // handle each normal circle
   for (int i = 0; i < circles.size(); i++) {
     // update each circle
     Circle thisCircle = circles.get(i);
     thisCircle.update();
-    for (int j = 0; j < grownCircles.size(); j++) {
-      // check for collisions with each circle that's grown
-      Circle otherCircle = grownCircles.get(j);
-      thisCircle.chkColl(j, otherCircle);
-    }
+    thisCircle.chkColl();
   }
   
+  // update each grown circle
   for (int k = 1; k < (grownCircles.size() - 1); k++) {
     grownCircles.get(k).update();
   }
   
+  // draw main circle on top
   if (grownCircles.size() > 0) {
     grownCircles.get(0).update();
   }
   
-  int reset = 30 * 12;
-  if (frameCount % reset == reset - 1) {
+  // reset after time period
+  int frameR = 30;
+  int resetSeconds = 12;
+  int resetFrames = resetSeconds * frameR;
+  if (frameCount % resetFrames == resetFrames - 1) {
     reset();
   }  
 } 
 
-void start() {
-  println("currentFrame", frameCount);
-  incited = false;
-  println(circles.size(), grownCircles.size());
-  int count = 20;
+void start() {  
+  int count = 25; // of circles
   for (int c = 0; c < count; c++) {
     circles.add(new Circle());
   }
-  println(circles.size(), grownCircles.size());
 }
 
 void reset() {
-  println("reset!");
   circles.clear();
   grownCircles.clear();
   start();
 }
  
 class Circle { 
-  PVector p;
-  float r, s, d;
-  color f;
-  boolean v, grow;
+  PVector p; // position
+  float r, s, d; // radius, speed, direction
+  color f; // fill color
+  boolean grow; // growing?
   
   // default
   Circle () {  
@@ -75,13 +67,11 @@ class Circle {
     int fMax = 255;
     int opac = 175;
     float r = random(fMin, fMax);
-    println("red", r);
     float g = random(fMin, fMax);
     float b = random(fMin, fMax);
     f = color(r, g, b, opac);
-    v = true; // visible
+    println(red(f));
     grow = false;
-    println(red(f), green(f), red(f));
   } 
   
   // mouse
@@ -92,51 +82,56 @@ class Circle {
     d = 0;
     int opac = 200;
     f = color(255, opac);
-    v = true; // visible
     grow = true;
   } 
   
-  void update() { 
+  void update() {
+    // update position based on speed and direction
     p.x += s * cos(d);
     p.y += s * sin(d);
     
+    // if circle collides with window edge, change direction
     if (p.y > height - r || p.y < r || p.x > width - r || p.x < r) { 
       flip();
     } 
+    
+    // draw circle
     noStroke();
     fill(f);
     ellipseMode(CENTER);
     ellipse(p.x, p.y, r * 2, r * 2);
     
+    // increase radius if circle is growing
     int rMax = 70;
-    float rGrowRate = 0.5;
+    float rGrowRate = 0.7;
     if (grow && r < rMax) {
       r += rGrowRate;
     }
   } 
   
   void flip() {
+    // change direction
     d += HALF_PI;
   }
   
-  void chkColl(int i, Circle other) {
-    float dist = PVector.dist(p, other.p);
-    if (grow == false && dist < (r + other.r)) {
-      //flip();
-      //other.flip();
-      grow = true;
-      s = 0;
-      grownCircles.add(this);
-      //circles.remove(this);
-      //grownCircles.add(new Circle(true, (int)p.x, (int)p.y));
+  void chkColl() {
+    // check for collisions with each circle that's grown
+    for (int j = 0; j < grownCircles.size(); j++) {
+      Circle otherCircle = grownCircles.get(j);
+      float dist = PVector.dist(p, otherCircle.p);
+      // if circle is not grown
+      if (grow == false && dist < (r + otherCircle.r)) {
+        grow = true; // start growing
+        s = 0; // stop moving
+        grownCircles.add(this); // add to grownCircles list
+      }
     }
   }
 }
 
 void mouseClicked() {
-  if (!incited) {
-    println("go!");
-    incited = true;
+  // if main circle has not been created yet, make one on click
+  if (grownCircles.size() == 0) {
     grownCircles.add(new Circle(true, mouseX, mouseY));
   }
 }

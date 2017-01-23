@@ -25,3 +25,11 @@
 [video](sketch_00_4_PersonalityCircles/4-Personality-Documentation.mov)
 
 ![documentation](sketch_00_4_PersonalityCircles/4-Personality-Documentation.gif)
+
+## 5 - Boomshine
+
+[code](sketch_00_5_Boomshine/sketch_00_5_Boomshine.pde)
+
+[video](sketch_00_5_Boomshine/5-Boomshine-Documentation.mov)
+
+![documentation](sketch_00_5_Boomshine/5-Boomshine-Documentation.gif)
