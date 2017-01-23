@@ -1,96 +1,84 @@
-// Personality Circles
+// Scripted Shapes
 
-IntList xHist, yHist;
-FloatList tHist;
-float theta;
-float theta2;
-
-int diam = 65;
-int buffSize = 20;
-int offset = 60;
+Shape s1, s2;
+float grndThrsh;
+boolean go;
 
 void setup() {
-  size(800, 800);
+  size(500, 300);
   
-  // setup buffers
-  xHist = new IntList();
-  yHist = new IntList();
-  tHist = new FloatList();
-  xHist.append(width/2);
-  yHist.append(height/2);
-  tHist.append(0);
+  grndThrsh = height / 3.0 * 2.0;
+  go = false;
+  
+  s1 = new Shape(width * 0.3, height * -0.2, 35);
+  int s2r = 15;
+  s2 = new Shape(width + s2r, grndThrsh - s2r, s2r);
 }
 
 void draw() {
+  control();
+  
   background(0);
+  noStroke();
   
-  /////////////////////////////////////////////////////////
-  // preparing position & angle logistics
-  /////////////////////////////////////////////////////////
+  // ground
+  fill(60, 0, 200);
+  rectMode(CORNER);
+  rect(0, height * 2/3.0, width, height/3.0);
   
-  // find average of each buffer
-  int xSum = 0;
-  int ySum = 0;
-  float tSum = 0;
-  int len = xHist.size();
-  for (int i = 0; i < len; i++) {
-    xSum += xHist.get(i);
-    ySum += yHist.get(i);
-    tSum += tHist.get(i); 
+  // shape 1  
+  fill(s1.clr);
+  rectMode(CENTER);
+  rect(s1.pos.x, s1.pos.y, s1.rad * 2, s1.rad * 2);
+  
+  // shape 2
+  fill(s2.clr);
+  ellipseMode(CENTER);
+  ellipse(s2.pos.x, s2.pos.y, s2.rad * 2, s2.rad * 2);
+}
+
+void control() {
+  float dist = PVector.dist(s1.pos, s2.pos) - s1.rad - s2.rad;
+  float alpha = 15;
+  float s1rt = 2.0;
+  float s2rt = 0.3;
+  if (go) {
+    if (s1.pos.y + s1.rad < grndThrsh) {
+      s1.pos.y += s1rt;
+    }
+    else {
+      if (dist > alpha && s2.pos.x > -0.5 * width) {
+        s2.pos.x -= s2rt;
+      }
+      else {
+        s2.clr = color(255, 0, 0);
+      }
+    }
+    float shakeThresh = width * 0.75;
+    if (s2.pos.x < shakeThresh) {
+      float rand = map(dist, width/2, 0, 0, 5); // random magnitiude
+      float s1ox = random(-rand, rand); // random x offset
+      float s1oy = random(-rand, rand); // random y offset
+      s1.pos.x += s1ox;
+      s1.pos.y += s1oy;
+    }
   }
-  float xAvg = 1.0 * xSum / len;
-  float yAvg = 1.0 * ySum / len;
-  float tAvg = 1.0 * tSum / len;
+}
+
+class Shape {
+  PVector pos;
+  int rad;
+  color clr;
   
-  // calculate opposite & adjacent sides
-  PVector v1 = new PVector(xAvg, yAvg);
-  PVector v2 = new PVector(mouseX, mouseY);
-  float xDelt = v2.x - v1.x;
-  float yDelt = v2.y - v1.y;
-  // distance between pacman and mouse
-  float dist = PVector.dist(v1, v2);
-  
-  // add new values to buffer and remove old
-  xHist.append(mouseX);
-  yHist.append(mouseY);
-  tHist.append(theta);
-  if (xHist.size() >= buffSize) {
-    xHist.remove(0);
-    yHist.remove(0);
-    tHist.remove(0);
+  Shape(float x, float y, int r) {
+    pos = new PVector(x, y);
+    rad = r;
+    clr = color(255, 255, 255);
   }
-  
-  /////////////////////////////////////////////////////////
-  // shape creation
-  /////////////////////////////////////////////////////////
- 
-  // global shape attributes
-  int sRs = 15; // base shape size
-  fill(255); // shape color
- 
-  // shape 1 - scale
-  int s1r = sRs * 1; // s1 radius
-  float s1a = 0; // s1 angle offset
-  float s1oy = map(dist, 0, 50, 50, 150) * sin(frameCount / 100.0); // y movement
-  float s1x =  mouseX - xDelt - cos(tAvg + s1a) * offset; 
-  float s1y = mouseY - yDelt - sin(tAvg + s1a) * offset + s1oy;
-  ellipse(s1x, s1y, s1r, s1r);
-  
-  // shape 2 - jitter
-  int s2r = sRs * 2;
-  float s2a = 0.333 * (2 * PI);
-  float rand = map(dist, 0, 50, 2, 15); // random magnitiude
-  float s2ox = random(-rand, rand); // random x offset
-  float s2oy = random(-rand, rand); // random y offset
-  float s2x =  mouseX - xDelt - cos(tAvg + s2a) * offset + s2ox; 
-  float s2y = mouseY - yDelt - sin(tAvg + s2a) * offset + s2oy;
-  ellipse(s2x, s2y, s2r, s2r);
-  
-  // shape 3 - scale
-  float sclFactor = map(dist, 0, 50, 3, 4.5) * abs(sin(frameCount / 17.0)) + 3;
-  float s3r = sRs * sclFactor;
-  float s3a = 0.666 * (2 * PI);
-  float s3x =  mouseX - xDelt - cos(tAvg + s3a) * offset; 
-  float s3y = mouseY - yDelt - sin(tAvg + s3a) * offset;
-  ellipse(s3x, s3y, s3r, s3r);
+}
+
+void keyPressed() {
+  if (key == 'g' || key == 'g') {
+    go = true;
+  }
 }

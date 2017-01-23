@@ -33,3 +33,11 @@
 [video](sketch_00_5_Boomshine/5-Boomshine-Documentation.mov)
 
 ![documentation](sketch_00_5_Boomshine/5-Boomshine-Documentation.gif)
+
+## 6 - Scripted Shapes
+
+[code](sketch_00_6_ScriptedShapes/sketch_00_6_ScriptedShapes.pde)
+
+[video](sketch_00_6_ScriptedShapes/6-ScriptedShapes-Documentation2.mov)
+
+![documentation](sketch_00_6_ScriptedShapes/6-ScriptedShapes-Documentation.gif)
