@@ -43,17 +43,22 @@ void control() {
   float s1rt = 2.0;
   float s2rt = 0.3;
   if (go) {
+    // s1 fall
     if (s1.pos.y + s1.rad < grndThrsh) {
       s1.pos.y += s1rt;
     }
     else {
+      // s2 roll in
       if (dist > alpha && s2.pos.x > -0.5 * width) {
         s2.pos.x -= s2rt;
       }
       else {
+        // change color
         s2.clr = color(255, 0, 0);
       }
     }
+    
+    // s1 shake when s2 near
     float shakeThresh = width * 0.75;
     if (s2.pos.x < shakeThresh) {
       float rand = map(dist, width/2, 0, 0, 5); // random magnitiude
