@@ -54,10 +54,6 @@ void setup() {
   // stepper 3
   pinMode(stp3stepPin, OUTPUT); 
   pinMode(stp3dirPin, OUTPUT);
-
-  sensors.setWaitForConversion(false);
-  Serial.print(sensors.getWaitForConversion());
-  Serial.println(sensors.getCheckForConversion());
 }
 
 // the loop function runs over and over again forever
@@ -68,9 +64,12 @@ void loop() {
   ////////////////
   //read temperature and output via serial
   sensors.requestTemperatures();
-  Serial.print(sensors.isConversionComplete());
-  Serial.print(" Econv, ");
+  double f = sensors.getTempFByIndex(0);
+  Serial.print(f);
+  Serial.print(" degrees F, delay ");
   unsigned long now = millis();
+  Serial.println(now - lastTime);
+  lastTime = now;
   
   ////////////////
   // switch
@@ -172,18 +171,6 @@ void loop() {
     digitalWrite(ledPin, LOW);
     digitalWrite(solPin, LOW);
   }
-
-  Serial.print(sensors.isConversionComplete());
-  Serial.print(" Wconv, ");
-  while(!sensors.isConversionComplete());
-  Serial.print(sensors.isConversionComplete());
-  Serial.print(" Lconv, ");
-  double f = sensors.getTempFByIndex(0);
-  Serial.print(f);
-  Serial.print(" degrees F, delay ");
-  unsigned long now2 = millis();
-  Serial.println(now2 - lastTime);
-  lastTime = now2;
 }
 
 double Celcius2Fahrenheit(double celsius) {
