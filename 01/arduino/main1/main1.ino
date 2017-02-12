@@ -1,4 +1,11 @@
-
+#include <OneWire.h>
+#include <DallasTemperature.h>
+ 
+//the pin you connect the ds18b20 to
+#define DS18B20 2 // temp sensor pin
+ 
+OneWire ourWire(DS18B20);
+DallasTemperature sensors(&ourWire);
 
 const int solPin = 4; // solenoid
 const int ledPin = 5; // LED
@@ -10,9 +17,11 @@ const int stp2stepPin = 10; // stepper 2 step
 const int stp3dirPin = 11; // stepper 3 direction
 const int stp3stepPin = 12; // stepper 3 step
 
+unsigned long lastTime = 0;
+
 // switch
-int switchState;         // variable for reading the pushbutton status
-int switchStatePrev = LOW;
+int switchState = true;         // variable for reading the pushbutton status
+int switchStatePrev = true;
 int powerState = false;
 
 // the following variables are unsigned long's because the time, measured in miliseconds,
@@ -25,6 +34,13 @@ int steps = 200/5;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
+  Serial.begin(9600);
+
+  delay(1000);
+  //start reading
+  sensors.begin();
+  sensors.setResolution(9);
+  
   pinMode(solPin, OUTPUT); // solenoid
   pinMode(ledPin, OUTPUT); // LED
   pinMode(switchPin, INPUT_PULLUP); // switch
@@ -38,11 +54,27 @@ void setup() {
   // stepper 3
   pinMode(stp3stepPin, OUTPUT); 
   pinMode(stp3dirPin, OUTPUT);
+
+  sensors.setWaitForConversion(false);
+  Serial.print(sensors.getWaitForConversion());
+  Serial.println(sensors.getCheckForConversion());
 }
 
 // the loop function runs over and over again forever
 void loop() {
 
+  ////////////////
+  // temperature
+  ////////////////
+  //read temperature and output via serial
+  sensors.requestTemperatures();
+  Serial.print(sensors.isConversionComplete());
+  Serial.print(" Econv, ");
+  unsigned long now = millis();
+  
+  ////////////////
+  // switch
+  ////////////////
   // read the state of the switch into a local variable:
   int reading = digitalRead(switchPin);
 
@@ -74,41 +106,6 @@ void loop() {
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   switchStatePrev = reading;
-  
-  ////////////////
-  // switch
-  ////////////////
-  
-  /*
-  // read the state of the pushbutton value:
-  switchState = digitalRead(switchPin);
-
-   // check if the pushbutton is pressed.
-  // if it is, the buttonState is HIGH:
-  if (switchState == LOW and switchStatePrev == HIGH) {
-    // turn LED on:
-    if (powerState == false) {
-      powerState = true;
-    }
-    else {
-      powerState = false;
-    }
-  }
-
-  // store current state for next loop
-  switchStatePrev = switchState;
-  
-
-
-  
-
-  // check if the pushbutton is pressed.
-  // if it is, the buttonState is HIGH:
-  if (powerState == true) {
-    // turn LED on:
-    digitalWrite(ledPin, HIGH);
-  } 
-  */
 
   if (powerState == true) {
 
@@ -175,7 +172,22 @@ void loop() {
     digitalWrite(ledPin, LOW);
     digitalWrite(solPin, LOW);
   }
-  
+
+  Serial.print(sensors.isConversionComplete());
+  Serial.print(" Wconv, ");
+  while(!sensors.isConversionComplete());
+  Serial.print(sensors.isConversionComplete());
+  Serial.print(" Lconv, ");
+  double f = sensors.getTempFByIndex(0);
+  Serial.print(f);
+  Serial.print(" degrees F, delay ");
+  unsigned long now2 = millis();
+  Serial.println(now2 - lastTime);
+  lastTime = now2;
+}
+
+double Celcius2Fahrenheit(double celsius) {
+  return 1.8 * celsius + 32;
 }
 
 ///////////////////////////////////////////
