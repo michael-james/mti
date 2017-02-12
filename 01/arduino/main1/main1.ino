@@ -11,9 +11,14 @@ const int stp3dirPin = 11; // stepper 3 direction
 const int stp3stepPin = 12; // stepper 3 step
 
 // switch
-int switchState = 0;         // variable for reading the pushbutton status
-int switchStatePrev = 0;
+int switchState;         // variable for reading the pushbutton status
+int switchStatePrev = LOW;
 int powerState = false;
+
+// the following variables are unsigned long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 0;    // the debounce time; increase if the output flickers
 
 // steppers
 int steps = 200/5;
@@ -37,10 +42,44 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
+
+  // read the state of the switch into a local variable:
+  int reading = digitalRead(switchPin);
+
+  // check to see if you just pressed the button
+  // (i.e. the input went from LOW to HIGH),  and you've waited
+  // long enough since the last press to ignore any noise:
+
+  // If the switch changed, due to noise or pressing:
+  if (reading != switchStatePrev) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer
+    // than the debounce delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (reading != switchState) {
+      switchState = reading;
+
+      // only toggle the LED if the new button state is HIGH
+      if (switchState == HIGH) {
+        powerState = !powerState;
+      }
+    }
+  }
+
+  // save the reading.  Next time through the loop,
+  // it'll be the lastButtonState:
+  switchStatePrev = reading;
   
   ////////////////
   // switch
   ////////////////
+  
+  /*
   // read the state of the pushbutton value:
   switchState = digitalRead(switchPin);
 
@@ -69,6 +108,7 @@ void loop() {
     // turn LED on:
     digitalWrite(ledPin, HIGH);
   } 
+  */
 
   if (powerState == true) {
 
