@@ -59,33 +59,33 @@ void loop() {
   // store current state for next loop
   switchStatePrev = switchState;
   
-  ////////////////
-  // solenoid
-  ////////////////
-  digitalWrite(solPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(10);                       // wait for a second
-  digitalWrite(solPin, LOW);    // turn the LED off by making the voltage LOW
 
-  ////////////////
-  // LED
-  ////////////////
-  /* // loop
-  digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(10);                       // wait for a second
-  digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW*/
+
+  
 
   // check if the pushbutton is pressed.
   // if it is, the buttonState is HIGH:
   if (powerState == true) {
     // turn LED on:
     digitalWrite(ledPin, HIGH);
-  } else {
-    // turn LED off:
-    digitalWrite(ledPin, LOW);
-  }
+  } 
 
-//  if (powerState == true) {
-    
+  if (powerState == true) {
+
+    ////////////////
+    // solenoid
+    ////////////////
+    digitalWrite(solPin, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(10);                       // wait for a second
+    digitalWrite(solPin, LOW);    // turn the LED off by making the voltage LOW
+
+    ////////////////
+    // LED
+    ////////////////
+    digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(10);                       // wait for a second
+    digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
+  
     ////////////////
     // stepper 1
     ////////////////
@@ -128,8 +128,14 @@ void loop() {
     ////////////////
     // delay
     ////////////////
-    //  delay(1000); // wait for a second
-//  }
+    //delay(1000); // wait for a second
+    
+  } else {
+    // turn LED off:
+    digitalWrite(ledPin, LOW);
+    digitalWrite(solPin, LOW);
+  }
+  
 }
 
 ///////////////////////////////////////////
