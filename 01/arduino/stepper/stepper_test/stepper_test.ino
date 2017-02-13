@@ -5,7 +5,9 @@
  */
 // defines pins numbers
 
-int steps = 200/5;
+const int dirPin = 3;
+const int stepPin = 4;
+int steps = 200/6;
  
 void setup() {
   // Sets the two pins as Outputs
@@ -13,17 +15,17 @@ void setup() {
   pinMode(dirPin,OUTPUT);
 }
 void loop() {
-  digitalWrite(dirPin,HIGH); // Enables the motor to move in a particular direction
+  digitalWrite(dirPin,LOW); // Enables the motor to move in a particular direction
   // Makes 200 pulses for making one full cycle rotation
   for(int x = 0; x < steps; x++) {
     digitalWrite(stepPin,HIGH); 
     delayMicroseconds(500); 
     digitalWrite(stepPin,LOW); 
     delayMicroseconds(500);
-    delay(25); 
+    delay(50); 
 //    delay(200); 
   }
-  delay(2000); // One second delay
+  delay(1000); // One second delay
   
 //  digitalWrite(dirPin,LOW); //Changes the rotations direction
 //  // Makes 400 pulses for making two full cycle rotation
