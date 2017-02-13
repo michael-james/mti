@@ -17,6 +17,14 @@ const int stp2stepPin = 10; // stepper 2 step
 const int stp3dirPin = 11; // stepper 3 direction
 const int stp3stepPin = 12; // stepper 3 step
 
+// on off
+bool sol = true;
+bool led = true;
+bool stp1 = false;
+bool stp2 = false;
+bool stp3 = false;
+bool temp = false;
+
 unsigned long lastTime = 0;
 
 // switch
@@ -28,6 +36,14 @@ int powerState = false;
 // will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 0;    // the debounce time; increase if the output flickers
+
+// solenoid timing
+unsigned long lastSolTime = 0;
+unsigned long solDelay = 5000;
+
+// stepper 1 timing
+unsigned long lastStp1Time = 0;
+unsigned long stp1Delay = 5000;
 
 // steppers
 int steps = 200/5;
@@ -58,18 +74,17 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-
+  
   ////////////////
   // temperature
   ////////////////
-  //read temperature and output via serial
-  sensors.requestTemperatures();
-  double f = sensors.getTempFByIndex(0);
-  Serial.print(f);
-  Serial.print(" degrees F, delay ");
-  unsigned long now = millis();
-  Serial.println(now - lastTime);
-  lastTime = now;
+  if (temp) {
+    //read temperature and output via serial
+    sensors.requestTemperatures();
+    double f = sensors.getTempFByIndex(0);
+    Serial.print(f);
+    Serial.print(" degrees F, delay ");
+  }
   
   ////////////////
   // switch
@@ -98,6 +113,8 @@ void loop() {
       // only toggle the LED if the new button state is HIGH
       if (switchState == HIGH) {
         powerState = !powerState;
+
+        lastSolTime = -solDelay; 
       }
     }
   }
@@ -111,56 +128,68 @@ void loop() {
     ////////////////
     // solenoid
     ////////////////
-    digitalWrite(solPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(10);                       // wait for a second
-    digitalWrite(solPin, LOW);    // turn the LED off by making the voltage LOW
+    if (sol) {
+      if ((millis() - lastSolTime) > solDelay) {
+        ringSol();
+        lastSolTime = millis();
+      }
+    } 
 
     ////////////////
     // LED
     ////////////////
-    digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(10);                       // wait for a second
-    digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
+    if (led) {
+      digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
+//      delay(10);                       // wait for a second
+//      digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
+//      delay(1000);
+    }
   
     ////////////////
     // stepper 1
     ////////////////
-    digitalWrite(stp1dirPin,HIGH); // Enables the motor to move in a particular direction
-    // Makes 200 pulses for making one full cycle rotation
-    for(int x = 0; x < steps; x++) {
-      digitalWrite(stp1stepPin,HIGH); 
-      delayMicroseconds(500); 
-      digitalWrite(stp1stepPin,LOW); 
-      delayMicroseconds(500);
-      delay(50); 
+    if (stp1) {
+      digitalWrite(stp1dirPin,HIGH); // Enables the motor to move in a particular direction
+      // Makes 200 pulses for making one full cycle rotation
+      for(int x = 0; x < steps; x++) {
+        digitalWrite(stp1stepPin,HIGH); 
+        delayMicroseconds(500); 
+        digitalWrite(stp1stepPin,LOW); 
+        delayMicroseconds(500);
+        delay(25); 
+      }
     }
-  
+    
     ////////////////
     // stepper 2
     ////////////////
-    digitalWrite(stp2dirPin,HIGH); // Enables the motor to move in a particular direction
-    // Makes 200 pulses for making one full cycle rotation
-    for(int x = 0; x < steps; x++) {
-      digitalWrite(stp2stepPin,HIGH); 
-      delayMicroseconds(500); 
-      digitalWrite(stp2stepPin,LOW); 
-      delayMicroseconds(500);
-      delay(50); 
+    if (stp2) {
+      digitalWrite(stp2dirPin,LOW); // Enables the motor to move in a particular direction
+      // Makes 200 pulses for making one full cycle rotation
+      for(int x = 0; x < steps; x++) {
+        digitalWrite(stp2stepPin,HIGH); 
+        delayMicroseconds(500); 
+        digitalWrite(stp2stepPin,LOW); 
+        delayMicroseconds(500);
+        delay(25); 
+      }
     }
   
     ////////////////
     // stepper 3
     ////////////////
-    digitalWrite(stp3dirPin,HIGH); // Enables the motor to move in a particular direction
-    // Makes 200 pulses for making one full cycle rotation
-    for(int x = 0; x < steps; x++) {
-      digitalWrite(stp3stepPin,HIGH); 
-      delayMicroseconds(500); 
-      digitalWrite(stp3stepPin,LOW); 
-      delayMicroseconds(500);
-      delay(50); 
+    if (stp3) {
+      digitalWrite(stp3dirPin,HIGH); // Enables the motor to move in a particular direction
+      // Makes 200 pulses for making one full cycle rotation
+      for(int x = 0; x < steps; x++) {
+        digitalWrite(stp3stepPin,HIGH); 
+        delayMicroseconds(500); 
+        digitalWrite(stp3stepPin,LOW); 
+        delayMicroseconds(500);
+        delay(25); 
+      }
     }
-  
+    
     ////////////////
     // delay
     ////////////////
@@ -171,10 +200,17 @@ void loop() {
     digitalWrite(ledPin, LOW);
     digitalWrite(solPin, LOW);
   }
+
+  // print loop time
+  unsigned long now = millis();
+  Serial.println(now - lastTime);
+  lastTime = now;
 }
 
-double Celcius2Fahrenheit(double celsius) {
-  return 1.8 * celsius + 32;
+void ringSol() {
+  digitalWrite(solPin, HIGH);   // turn the SOL on (HIGH is the voltage level)
+  delay(10);                       // wait
+  digitalWrite(solPin, LOW);    // turn the SOL off by making the voltage LOW
 }
 
 ///////////////////////////////////////////
