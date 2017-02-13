@@ -21,11 +21,12 @@ const int stpStepPins[] = {8, 10, 12};
 // game variables
 bool record = false; // record has started
 bool start = false; // record has started and stopped, so begin
-double hotThresh = 177; // temperature above which water is "hot"
+double hotThresh = 170; // temperature above which water is "hot"
 bool hot = false; // temperature sensor has been placed in hot water
 double targetTemp = 165; // temperature at which tea is ready to steep
 bool steep = false; // water is ready for steeping
-double comfortTemp = 130; // temperature at which tea is ready to steep
+double comfortTemp = 131; // temperature at which tea is ready to steep
+//double comfortTemp = 50; // temperature at which tea is ready to steep
 bool drink = false; // water is ready for drinking
 unsigned long steepTimeSec = 180;
 unsigned long steepTime = steepTimeSec * 1000;
@@ -179,7 +180,7 @@ void loop() {
   // temperature sensor placed in hot water
   if ((hot) and (!hotDone)) {
     ringSol();
-    delay(10 * 1000); // 10 sec delay between temp sensor in hot water & dispenses
+    delay(20 * 1000); // 10 sec delay between temp sensor in hot water & dispenses
     dispense();
     hotDone = true;
   }
@@ -188,6 +189,7 @@ void loop() {
   if ((steep) and (!steepDone)) {
     ringSol(); // put infuser in
     steepDone = true;
+    steepStart = millis();
   }
 
   // steeper time end
@@ -221,7 +223,7 @@ void loop() {
 
 //  // print temperature
   Serial.print(t);
-  Serial.print(" ");
+  Serial.print(", ");
 //  Serial.print(" degrees F, delay ");
 //  
 //  // print loop time
@@ -238,9 +240,10 @@ void loop() {
     if (stopwatch < steepTimeSec) {
       Serial.print(stopwatch);
       Serial.print(" ");
-      Serial.print(steepTime);
+      Serial.print(steepTimeSec);
     }
   }
+  if (removeDone) {Serial.print(", remove");}
   if (drink) {Serial.print(", drink");}
   Serial.println();
 }
@@ -249,18 +252,20 @@ void ringSol() {
   digitalWrite(solPin, HIGH);   // turn the SOL on (HIGH is the voltage level)
   delay(10);                       // wait
   digitalWrite(solPin, LOW);    // turn the SOL off by making the voltage LOW
+  Serial.print(t);
+  Serial.println(" ring!");
 }
 
 void rotStepper(int sel) {
   int pin;
   switch (sel) {
-      case 1:    // your hand is close to the sensor
+      case 1:
         pin = stpStepPins[0];
         break;
-      case 2:    // your hand is a few inches from the sensor
+      case 2:
         pin = stpStepPins[1];
         break;
-      case 3:    // your hand is nowhere near the sensor
+      case 3:
         pin = stpStepPins[2];
         break;
     }
@@ -287,7 +292,7 @@ void dispense() {
   
   ringSol();
   delay(dispenseDelay);
-  rotStepper(2);
+//  rotStepper(2);
   delay(ringDelay);
   
   ringSol();
@@ -299,25 +304,6 @@ void dispense() {
 // Credits
 ///////////////////////////////////////////
 /*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO 
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN takes care 
-  of use the correct LED pin whatever is the board used.
-  If you want to know what pin the on-board LED is connected to on your Arduino model, check
-  the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
-  
-  This example code is in the public domain.
-
-  modified 8 May 2014
-  by Scott Fitzgerald
-  
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-
-////////
-
-  Arduino Debouncer Tutorial
-
+ * Arduino Blink Tutorial
+ * Arduino Debouncer Tutorial
 */
