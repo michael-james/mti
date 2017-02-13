@@ -11,16 +11,17 @@ const int solPin = 4; // solenoid
 const int ledPin = 5; // LED
 const int switchPin = 6; // switch
 const int stp1dirPin = 7; // stepper 1 direction
-const int stp1stepPin = 8; // stepper 1 step
+//const int stp1stepPin = 8; // stepper 1 step
 const int stp2dirPin = 9; // stepper 2 direction
-const int stp2stepPin = 10; // stepper 2 step
+//const int stp2stepPin = 10; // stepper 2 step
 const int stp3dirPin = 11; // stepper 3 direction
-const int stp3stepPin = 12; // stepper 3 step
+//const int stp3stepPin = 12; // stepper 3 step
+const int stpStepPins[] = {8, 10, 12};
 
 // on off
 bool sol = true;
 bool led = true;
-bool stp1 = false;
+bool stp1 = true;
 bool stp2 = false;
 bool stp3 = false;
 bool temp = false;
@@ -62,14 +63,19 @@ void setup() {
   pinMode(switchPin, INPUT_PULLUP); // switch
   
   // stepper 1
-  pinMode(stp1stepPin, OUTPUT); 
+  pinMode(stpStepPins[0], OUTPUT); 
   pinMode(stp1dirPin, OUTPUT);
   // stepper 2
-  pinMode(stp2stepPin, OUTPUT); 
+  pinMode(stpStepPins[1], OUTPUT); 
   pinMode(stp2dirPin, OUTPUT);
   // stepper 3
-  pinMode(stp3stepPin, OUTPUT); 
+  pinMode(stpStepPins[2], OUTPUT); 
   pinMode(stp3dirPin, OUTPUT);
+
+  // Enables the motor to move in a particular direction
+  digitalWrite(stp1dirPin,HIGH);
+  digitalWrite(stp2dirPin,LOW);
+  digitalWrite(stp3dirPin,HIGH);
 }
 
 // the loop function runs over and over again forever
@@ -114,7 +120,8 @@ void loop() {
       if (switchState == HIGH) {
         powerState = !powerState;
 
-        lastSolTime = -solDelay; 
+        lastSolTime = -solDelay;
+        dispense(); 
       }
     }
   }
@@ -126,16 +133,6 @@ void loop() {
   if (powerState == true) {
 
     ////////////////
-    // solenoid
-    ////////////////
-    if (sol) {
-      if ((millis() - lastSolTime) > solDelay) {
-        ringSol();
-        lastSolTime = millis();
-      }
-    } 
-
-    ////////////////
     // LED
     ////////////////
     if (led) {
@@ -144,52 +141,7 @@ void loop() {
 //      digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
 //      delay(1000);
     }
-  
-    ////////////////
-    // stepper 1
-    ////////////////
-    if (stp1) {
-      digitalWrite(stp1dirPin,HIGH); // Enables the motor to move in a particular direction
-      // Makes 200 pulses for making one full cycle rotation
-      for(int x = 0; x < steps; x++) {
-        digitalWrite(stp1stepPin,HIGH); 
-        delayMicroseconds(500); 
-        digitalWrite(stp1stepPin,LOW); 
-        delayMicroseconds(500);
-        delay(25); 
-      }
-    }
-    
-    ////////////////
-    // stepper 2
-    ////////////////
-    if (stp2) {
-      digitalWrite(stp2dirPin,LOW); // Enables the motor to move in a particular direction
-      // Makes 200 pulses for making one full cycle rotation
-      for(int x = 0; x < steps; x++) {
-        digitalWrite(stp2stepPin,HIGH); 
-        delayMicroseconds(500); 
-        digitalWrite(stp2stepPin,LOW); 
-        delayMicroseconds(500);
-        delay(25); 
-      }
-    }
-  
-    ////////////////
-    // stepper 3
-    ////////////////
-    if (stp3) {
-      digitalWrite(stp3dirPin,HIGH); // Enables the motor to move in a particular direction
-      // Makes 200 pulses for making one full cycle rotation
-      for(int x = 0; x < steps; x++) {
-        digitalWrite(stp3stepPin,HIGH); 
-        delayMicroseconds(500); 
-        digitalWrite(stp3stepPin,LOW); 
-        delayMicroseconds(500);
-        delay(25); 
-      }
-    }
-    
+
     ////////////////
     // delay
     ////////////////
@@ -211,6 +163,50 @@ void ringSol() {
   digitalWrite(solPin, HIGH);   // turn the SOL on (HIGH is the voltage level)
   delay(10);                       // wait
   digitalWrite(solPin, LOW);    // turn the SOL off by making the voltage LOW
+}
+
+void rotStepper(int sel) {
+  int pin;
+  switch (sel) {
+      case 1:    // your hand is close to the sensor
+        pin = stpStepPins[0];
+        break;
+      case 2:    // your hand is a few inches from the sensor
+        pin = stpStepPins[1];
+        break;
+      case 3:    // your hand is nowhere near the sensor
+        pin = stpStepPins[2];
+        break;
+    }
+  if (pin == stpStepPins[0] or pin == stpStepPins[1] or pin == stpStepPins[2]) {
+    // rotate selected stepper
+    for(int x = 0; x < steps; x++) {
+      
+      digitalWrite(pin,HIGH); 
+      delayMicroseconds(500); 
+      digitalWrite(pin,LOW); 
+      delayMicroseconds(500);
+      delay(25);
+    }
+  }
+}
+
+void dispense() {
+  int dispenseDelay = 3000;
+  int ringDelay = 5000;
+  ringSol();
+  delay(dispenseDelay);
+  rotStepper(1);
+  delay(ringDelay);
+  
+  ringSol();
+  delay(dispenseDelay);
+  rotStepper(2);
+  delay(ringDelay);
+  
+  ringSol();
+  delay(dispenseDelay);
+  rotStepper(3);
 }
 
 ///////////////////////////////////////////
