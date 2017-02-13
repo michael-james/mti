@@ -53,7 +53,7 @@ unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 0;    // the debounce time; increase if the output flickers
 
 // steppers
-int steps = 200/8;
+int steps = 200/7;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -180,7 +180,7 @@ void loop() {
   // temperature sensor placed in hot water
   if ((hot) and (!hotDone)) {
     ringSol();
-    delay(20 * 1000); // 10 sec delay between temp sensor in hot water & dispenses
+    delay(30 * 1000); // 10 sec delay between temp sensor in hot water & dispenses
     dispense();
     hotDone = true;
   }
@@ -235,7 +235,7 @@ void loop() {
   if (start) {Serial.print(", start");}
   if (hot) {Serial.print(", hot");}
   if (steep) {
-    Serial.print(", steep ");
+    Serial.print(", steep");
     unsigned long stopwatch = (millis() - steepStart) / 1000;
     if (stopwatch < steepTimeSec) {
       Serial.print(stopwatch);

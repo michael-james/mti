@@ -5,8 +5,8 @@
  */
 // defines pins numbers
 
-const int dirPin = 3;
-const int stepPin = 4;
+const int dirPin = 11;
+const int stepPin = 12;
 int steps = 200/6;
  
 void setup() {
