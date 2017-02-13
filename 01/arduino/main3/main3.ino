@@ -18,36 +18,41 @@ const int stp3dirPin = 11; // stepper 3 direction
 //const int stp3stepPin = 12; // stepper 3 step
 const int stpStepPins[] = {8, 10, 12};
 
-// on off
-bool sol = true;
-bool led = true;
-bool stp1 = true;
-bool stp2 = false;
-bool stp3 = false;
-bool temp = false;
+// game variables
+bool record = false; // record has started
+bool start = false; // record has started and stopped, so begin
+double hotThresh = 177; // temperature above which water is "hot"
+bool hot = false; // temperature sensor has been placed in hot water
+double targetTemp = 165; // temperature at which tea is ready to steep
+bool steep = false; // water is ready for steeping
+double comfortTemp = 130; // temperature at which tea is ready to steep
+bool drink = false; // water is ready for drinking
+unsigned long steepTimeSec = 180;
+unsigned long steepTime = steepTimeSec * 1000;
+unsigned long steepStart;
 
-unsigned long lastTime = 0;
+bool recordDone = false;
+bool startDone = false;
+bool hotDone = false;
+bool steepDone = false;
+bool removeDone = false;
+
+unsigned long lastTime = 0; // timestamp when last loop ended
+
+// live variables
+double t; // current temperature
 
 // switch
 int switchState = true;         // variable for reading the pushbutton status
 int switchStatePrev = true;
-int powerState = false;
 
 // the following variables are unsigned long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 0;    // the debounce time; increase if the output flickers
 
-// solenoid timing
-unsigned long lastSolTime = 0;
-unsigned long solDelay = 5000;
-
-// stepper 1 timing
-unsigned long lastStp1Time = 0;
-unsigned long stp1Delay = 5000;
-
 // steppers
-int steps = 200/5;
+int steps = 200/8;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -82,19 +87,9 @@ void setup() {
 void loop() {
   
   ////////////////
-  // temperature
-  ////////////////
-  if (temp) {
-    //read temperature and output via serial
-    sensors.requestTemperatures();
-    double f = sensors.getTempFByIndex(0);
-    Serial.print(f);
-    Serial.print(" degrees F, delay ");
-  }
-  
-  ////////////////
   // switch
   ////////////////
+  
   // read the state of the switch into a local variable:
   int reading = digitalRead(switchPin);
 
@@ -118,10 +113,13 @@ void loop() {
 
       // only toggle the LED if the new button state is HIGH
       if (switchState == HIGH) {
-        powerState = !powerState;
+        if (!record) {
+          record = true;
+        } else {
+          start = true;
+        }
 
-        lastSolTime = -solDelay;
-        dispense(); 
+//        dispense(); 
       }
     }
   }
@@ -130,33 +128,121 @@ void loop() {
   // it'll be the lastButtonState:
   switchStatePrev = reading;
 
-  if (powerState == true) {
-
-    ////////////////
-    // LED
-    ////////////////
-    if (led) {
-      digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-//      delay(10);                       // wait for a second
-//      digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
-//      delay(1000);
-    }
-
-    ////////////////
-    // delay
-    ////////////////
-    //delay(1000); // wait for a second
-    
+  ////////////////
+  // LED
+  ////////////////
+  
+  // LED on if in record mode
+  if ((record) and (!start)) {
+    digitalWrite(ledPin, HIGH); 
   } else {
-    // turn LED off:
-    digitalWrite(ledPin, LOW);
-    digitalWrite(solPin, LOW);
+    digitalWrite(ledPin, LOW); 
   }
 
-  // print loop time
+  ////////////////
+  // temperature
+  ////////////////
+  if (start) {
+    //read temperature and output via serial
+    sensors.requestTemperatures();
+    t = sensors.getTempFByIndex(0);
+  }
+
+  if ((record) and (start) and (t > hotThresh)) {
+    hot = true;
+  }
+
+  if ((record) and (start) and (hot) and (t < targetTemp)) {
+    steep = true;
+  }
+
+  if ((record) and (start) and (hot) and (steep) and (t < comfortTemp)) {
+    drink = true;
+  }
+
+  ////////////////
+  // bell
+  ////////////////
+
+  // record starts
+  if ((record) and (!recordDone)) {
+    ringSol();
+    recordDone = true;
+  }
+
+  // record stops
+  if ((start) and (!startDone)) {
+    ringSol();
+    startDone = true;
+  }
+
+  // temperature sensor placed in hot water
+  if ((hot) and (!hotDone)) {
+    ringSol();
+    delay(10 * 1000); // 10 sec delay between temp sensor in hot water & dispenses
+    dispense();
+    hotDone = true;
+  }
+
+  // tea at target temp, ready to steep
+  if ((steep) and (!steepDone)) {
+    ringSol(); // put infuser in
+    steepDone = true;
+  }
+
+  // steeper time end
+  if ((steep) and (steepDone) and (millis() - steepStart > steepTime) and (!removeDone)) {
+    ringSol(); // take infuser out
+    removeDone = true;
+  }
+
+  // tea at comfortable temp, ready to drink
+  if (drink) {
+    ringSol();
+    record = false;
+    start = false;
+    hot = false;
+    steep = false;
+    drink = false;
+    
+    recordDone = false;
+    startDone = false;
+    hotDone = false;
+    steepDone = false;
+    removeDone = false;
+
+    switchState = true;         // variable for reading the pushbutton status
+    switchStatePrev = true;
+  }
+
+  ////////////////
+  // print
+  ////////////////
+
+//  // print temperature
+  Serial.print(t);
+  Serial.print(" ");
+//  Serial.print(" degrees F, delay ");
+//  
+//  // print loop time
   unsigned long now = millis();
-  Serial.println(now - lastTime);
+  Serial.print(now - lastTime);
   lastTime = now;
+
+  if (record) {Serial.print(", record");}
+  if (start) {Serial.print(", start");}
+  if (hot) {Serial.print(", hot");}
+  if (steep) {
+    Serial.print(", steep ");
+    unsigned long stopwatch = (millis() - steepStart) / 1000;
+    if (stopwatch < steepTimeSec) {
+      Serial.print(stopwatch);
+      Serial.print(" ");
+      Serial.print(steepTime);
+    }
+  }
+  if (drink) {Serial.print(", drink");}
+  Serial.println();
 }
 
 void ringSol() {
