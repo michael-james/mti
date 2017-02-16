@@ -6,4 +6,4 @@
 
 ## Project 01
 
-[documentation](01/README.md)
+[documentation](01)
