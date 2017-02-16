@@ -1,6 +1,8 @@
 /*
  * Augmented Tea Ceremony
  * by Michael James
+ * 
+ * Rev: 02-16-2017
  */
 
 ////////////////////////////////
@@ -25,6 +27,11 @@ const int stp2dirPin = 9; // stepper 2 direction
 const int stp3dirPin = 11; // stepper 3 direction
 const int stpStepPins[] = {8, 10, 12};
 
+// set which dispensers to rotate
+const bool rot1 = true;
+const bool rot2 = false;
+const bool rot3 = true;
+
 ////////////////////////////////
 
 // setup Dallas Temperature for Sensor
@@ -35,22 +42,19 @@ DallasTemperature sensors(&ourWire);
 
 // game variables
 bool record = false; // record has started
-bool start = false; // record has started and stopped, so begin
-bool hot = false; // temperature sensor has been placed in hot water
-bool steep = false; // water is ready for steeping
-bool drink = false; // water is ready for drinking
-unsigned long steepTime = steepTimeSec * 1000;
-unsigned long steepStart;
-
 bool recordDone = false;
+bool start = false; // record has started and stopped, so begin
 bool startDone = false;
+bool hot = false; // temperature sensor has been placed in hot water
 bool hotDone = false;
+bool steep = false; // water is ready for steeping
 bool steepDone = false;
 bool removeDone = false;
+bool drink = false; // water is ready for drinking
 
+unsigned long steepTime = steepTimeSec * 1000;
+unsigned long steepStart;
 unsigned long lastTime = 0; // timestamp when last loop ended
-
-// live variables
 double t; // current temperature
 
 // switch
@@ -62,7 +66,9 @@ int switchStatePrev = true;
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 0;    // the debounce time; increase if the output flickers
 
-// steppers
+////////////////////////////////
+// setup
+////////////////////////////////
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -92,6 +98,10 @@ void setup() {
   digitalWrite(stp2dirPin,LOW);
   digitalWrite(stp3dirPin,HIGH);
 }
+
+////////////////////////////////
+// loop
+////////////////////////////////
 
 // the loop function runs over and over again forever
 void loop() {
@@ -171,7 +181,7 @@ void loop() {
   }
 
   ////////////////
-  // bell
+  // bell strikes
   ////////////////
 
   // record starts
@@ -207,7 +217,7 @@ void loop() {
     removeDone = true;
   }
 
-  // tea at comfortable temp, ready to drink
+  // tea at comfortable temp, ready to drink (reset system)
   if (drink) {
     ringSol();
     record = false;
@@ -227,19 +237,19 @@ void loop() {
   }
 
   ////////////////
-  // print
+  // print for debugging
   ////////////////
 
-//  // print temperature
+  // print temperature
   Serial.print(t);
   Serial.print(", ");
-//  Serial.print(" degrees F, delay ");
-//  
-//  // print loop time
+  
+  // print loop time
   unsigned long now = millis();
   Serial.print(now - lastTime);
   lastTime = now;
 
+  // print current stage
   if (record) {Serial.print(", record");}
   if (start) {Serial.print(", start");}
   if (hot) {Serial.print(", hot");}
@@ -257,6 +267,10 @@ void loop() {
   Serial.println();
 }
 
+////////////////////////////////
+// ring solenoid
+////////////////////////////////
+
 void ringSol() {
   digitalWrite(solPin, HIGH);   // turn the SOL on (HIGH is the voltage level)
   delay(10);                       // wait
@@ -265,8 +279,13 @@ void ringSol() {
   Serial.println(" ring!");
 }
 
+////////////////////////////////
+// rotate stepper
+////////////////////////////////
+
 void rotStepper(int sel) {
   int pin;
+  // set stepper to rotate
   switch (sel) {
       case 1:
         pin = stpStepPins[0];
@@ -281,37 +300,44 @@ void rotStepper(int sel) {
   if (pin == stpStepPins[0] or pin == stpStepPins[1] or pin == stpStepPins[2]) {
     // rotate selected stepper
     for(int x = 0; x < steps; x++) {
-      
       digitalWrite(pin,HIGH); 
       delayMicroseconds(500); 
       digitalWrite(pin,LOW); 
       delayMicroseconds(500);
-      delay(25);
+      delay(25); // slowing motor gives it torque to rotate dispenser
     }
   }
 }
+
+////////////////////////////////
+// dispense
+////////////////////////////////
 
 void dispense() {
   delay(10 * 1000);
   int dispenseDelay = 3000;
   int ringDelay = 5000;
+
+  // dispense 1
   ringSol();
   delay(dispenseDelay);
-  rotStepper(1);
+  if (rot1) {rotStepper(1);}
   delay(ringDelay);
-  
+
+  // dispense 2
   ringSol();
   delay(dispenseDelay);
-  rotStepper(2);
+  if (rot2) {rotStepper(1);}
   delay(ringDelay);
-  
+
+  // dispense 3
   ringSol();
   delay(dispenseDelay);
-  rotStepper(3);
+  if (rot3) {rotStepper(3);}
 }
 
 ///////////////////////////////////////////
-// Credits
+// credits
 ///////////////////////////////////////////
 /*
  * Arduino Blink Tutorial
