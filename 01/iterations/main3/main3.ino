@@ -82,6 +82,8 @@ void setup() {
   digitalWrite(stp1dirPin,HIGH);
   digitalWrite(stp2dirPin,LOW);
   digitalWrite(stp3dirPin,HIGH);
+
+  dispense();
 }
 
 // the loop function runs over and over again forever
@@ -283,6 +285,7 @@ void rotStepper(int sel) {
 }
 
 void dispense() {
+  delay(10 * 1000);
   int dispenseDelay = 3000;
   int ringDelay = 5000;
   ringSol();
@@ -292,7 +295,7 @@ void dispense() {
   
   ringSol();
   delay(dispenseDelay);
-//  rotStepper(2);
+  rotStepper(2);
   delay(ringDelay);
   
   ringSol();
